@@ -1,3 +1,4 @@
+print("請稍後")
 from flask import Flask, request, abort
 
 from linebot import (
