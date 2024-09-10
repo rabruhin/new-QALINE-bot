@@ -49,12 +49,13 @@ handler = WebhookHandler(os.getenv('CHANNEL_SECRET'))
 # OPENAI API Key初始化設定
 #openai.api_key = os.getenv('OPENAI_API_KEY)
 
-print("請稍後")
 
 endpoint = os.getenv('END_POINT')
 credential = AzureKeyCredential(os.getenv('AZURE_KEY'))
 knowledge_base_project = os.getenv('PROJECT')
 deployment = 'production'
+
+line_bot_api.reply_message(event.reply_token, TextSendMessage("請稍後"))
 
 
 #def GPT_response(text):
