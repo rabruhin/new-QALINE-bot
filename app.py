@@ -20,7 +20,6 @@ from azure.core.credentials import AzureKeyCredential
 from azure.ai.language.questionanswering import QuestionAnsweringClient
 
 def process_message(data):
-    # 假設你處理完畢後需要推送結果
     result = "Processed result here"
     user_id = data['events'][0]['source']['userId']
     
@@ -36,13 +35,12 @@ def push_message(user_id, message):
         'to': user_id,
         'messages': [{'type': 'text', 'text': message}]
     }
-    requests.post('https://api.line.me/v2/bot/message/push', headers=headers, json=payload)
+    response = requests.post('https://api.line.me/v2/bot/message/push', headers=headers, json=payload)
+    print(f"Push message status: {response.status_code}, response: {response.text}")
 
 app = Flask(__name__)
 static_tmp_path = os.path.join(os.path.dirname(__file__), 'static', 'tmp')
-# Channel Access Token
 line_bot_api = LineBotApi(os.getenv('CHANNEL_ACCESS_TOKEN'))
-# Channel Secret
 handler = WebhookHandler(os.getenv('CHANNEL_SECRET'))
 
 endpoint = os.getenv('END_POINT')
@@ -61,32 +59,28 @@ def QA_response(text):
         )
     return output.answers[0].answer
 
-# 監聽所有來自 /callback 的 Post Request
 @app.route("/callback", methods=['POST'])
 def callback():
-    # get X-Line-Signature header value
     signature = request.headers['X-Line-Signature']
-    # get request body as text
     body = request.get_data(as_text=True)
     app.logger.info("Request body: " + body)
-    # handle webhook body
     try:
         handler.handle(body, signature)
     except InvalidSignatureError:
         abort(400)
     return 'OK'
 
-
-# 處理訊息
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
     msg = event.message.text
     # 先回應「請稍後」
     line_bot_api.reply_message(event.reply_token, TextSendMessage(text='請稍後...'))
     
+    # 延遲3秒，模擬後續處理
+    time.sleep(3)
+
     if msg[0] != '-':
         try:
-            # 後續處理，回應實際的 QA 答案
             QA_answer = QA_response(msg)
             print(QA_answer)
             push_message(event.source.user_id, QA_answer)
@@ -94,11 +88,9 @@ def handle_message(event):
             print(traceback.format_exc())
             push_message(event.source.user_id, 'QA Error')
 
-
 @handler.add(PostbackEvent)
 def handle_message(event):
     print(event.postback.data)
-
 
 @handler.add(MemberJoinedEvent)
 def welcome(event):
@@ -108,10 +100,10 @@ def welcome(event):
     name = profile.display_name
     message = TextSendMessage(text=f'{name}歡迎加入')
     line_bot_api.reply_message(event.reply_token, message)
-        
 
 import os
 if __name__ == "__main__":
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
+
 
