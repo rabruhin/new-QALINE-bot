@@ -77,7 +77,7 @@ def handle_message(event):
     line_bot_api.reply_message(event.reply_token, TextSendMessage(text='請稍後...'))
     
     # 延遲3秒，模擬後續處理
-    time.sleep(5)
+    time.sleep(3)
 
     try:
         QA_answer = QA_response(msg)
