@@ -77,16 +77,15 @@ def handle_message(event):
     line_bot_api.reply_message(event.reply_token, TextSendMessage(text='請稍後...'))
     
     # 延遲3秒，模擬後續處理
-    time.sleep(3)
+    time.sleep(10)
 
-    if msg[0] != '-':
-        try:
-            QA_answer = QA_response(msg)
-            print(QA_answer)
-            push_message(event.source.user_id, QA_answer)
-        except:
-            print(traceback.format_exc())
-            push_message(event.source.user_id, 'QA Error')
+    try:
+        QA_answer = QA_response(msg)
+        print(QA_answer)
+        push_message(event.source.user_id, QA_answer)
+    except:
+        print(traceback.format_exc())
+        push_message(event.source.user_id, 'QA Error')
 
 @handler.add(PostbackEvent)
 def handle_message(event):
