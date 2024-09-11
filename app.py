@@ -28,9 +28,10 @@ def process_message(data):
 
 def push_message(user_id, message):
     headers = {
-        'Authorization': 'Bearer YOUR_CHANNEL_ACCESS_TOKEN',
+        'Authorization': f'Bearer {os.getenv("CHANNEL_ACCESS_TOKEN")}',
         'Content-Type': 'application/json'
     }
+
     payload = {
         'to': user_id,
         'messages': [{'type': 'text', 'text': message}]
